@@ -1,0 +1,341 @@
+#!/usr/bin/env python
+# coding: utf-8
+
+# # Problem Statement:
+# 
+# Sales management has gained importance to meet increasing competition and the need for improved methods of distribution to reduce cost and to increase profits. Sales management today is the most important function in a commercial and business enterprise.
+# 
+# Do ETL : Extract-Transform-Load some Amazon dataset and find Sales-trend -> month wise , year
+# wise , yearly month wise. Find key metrics and factors and show the meaningful relationships
+# between attributes. Do your own research and come up with your findings.
+
+# ## Import necessary libraries:
+
+# In[18]:
+
+
+import numpy as np
+import pandas as pd
+import matplotlib.pyplot as plt
+get_ipython().run_line_magic('matplotlib', 'inline')
+import seaborn as sns
+
+
+# ## Dataset:
+
+# In[19]:
+
+
+data = pd.read_csv(r'C:\Users\chith\Desktop\Janani\Internship\Data Science and Machine Learning\DATA\100 Sales Records.csv')
+
+
+# In[20]:
+
+
+data
+
+
+# In[21]:
+
+
+data.head()
+
+
+# In[22]:
+
+
+data.tail()
+
+
+# In[23]:
+
+
+data.shape
+
+
+# In[24]:
+
+
+data.info()
+
+
+# ## Checking Data Type: 
+
+# In[25]:
+
+
+data.dtypes
+
+
+# In[26]:
+
+
+data.describe()
+
+
+# In[27]:
+
+
+data.columns
+
+
+# # Data Processing
+
+# ## Checking if there is any null value:
+
+# In[28]:
+
+
+data.isnull().sum()
+
+
+# In[29]:
+
+
+data.duplicated().sum()
+
+
+# In[30]:
+
+
+data['Ship Date']=pd.to_datetime(data['Ship Date'])
+data['Ship Date']
+
+
+# In[31]:
+
+
+data['Ship Date'].min()
+
+
+# In[32]:
+
+
+data['Ship Date'].max()
+
+
+# # Data Analysis
+
+# ## <u>Sales Trend</u>
+# 
+# ### 1. Month Wise :
+
+# In[33]:
+
+
+data['Month']=data['Ship Date'].apply(lambda x: x.strftime('%m'))
+data['Month']
+
+
+# In[34]:
+
+
+data_trendM = data.groupby('Month').sum()['Total Revenue'].reset_index()
+data_trendM
+
+
+# In[64]:
+
+
+plt.figure(figsize=(15,6))
+plt.plot(data_trendM['Month'],data_trendM['Total Revenue'],color = 'y')
+plt.grid(linestyle='--')
+plt.title('Monthwise Sales',fontsize=18)
+plt.xticks(rotation='vertical',size=10,fontsize=10)
+plt.yticks(fontsize=10)
+plt.xlabel('Month',fontsize=18)
+plt.ylabel('Total Revenue',fontsize=18)
+plt.show()
+
+
+# ## Conclusion
+# 
+# From the graph we see that
+# 
+# The Total Revenue collection are highest at 2nd month i.e. February and second highest at 11th month i.e. November.
+
+# ### 2. Year Wise :
+
+# In[36]:
+
+
+data['Year'] = data['Ship Date'].apply(lambda x: x.strftime('%Y'))
+data['Year']
+
+
+# In[59]:
+
+
+data_trendY = data.groupby('Year').sum()['Total Revenue'].reset_index()
+data_trendY
+
+
+# In[65]:
+
+
+plt.figure(figsize=(15,6))
+plt.plot(data_trendY['Year'],data_trendY['Total Revenue'],color = 'r')
+plt.grid(linestyle='--')
+plt.title('Yearwise Sales',fontsize=18)
+plt.xticks(rotation='vertical',size=8,fontsize=10)
+plt.yticks(fontsize=10)
+plt.xlabel('Year',fontsize=18)
+plt.ylabel('Total Revenue',fontsize=18)
+plt.show()
+
+
+# ## Conclusion
+# 
+# The Total Revenue collection was highest in 2012.
+
+# ### 3. Yearly Month Wise :
+
+# In[39]:
+
+
+data['month_year'] = data['Ship Date'].apply(lambda x: x.strftime('%Y,%m'))
+data['month_year']
+
+
+# In[62]:
+
+
+data_trendMY = data.groupby('month_year').sum()['Total Revenue'].reset_index()
+data_trendMY
+
+
+# In[69]:
+
+
+plt.figure(figsize=(15,6))
+plt.plot(data_trendMY['month_year'],data_trendMY['Total Revenue'],color = 'SALMON')
+plt.title('Yearly Monthwise Sales',fontsize=18)
+plt.xticks(rotation='vertical',size=9)
+plt.xlabel('Month-Year',fontsize=18)
+plt.ylabel('Total Revenue',fontsize=18)
+plt.xticks(rotation=60)
+plt.show()
+
+
+# ## Conclusion
+# 
+# The Total Revenue collection was highest on December, 2016 while on August, 2013 it was second highest.
+
+# # <u>Product wise sales</u>
+# 
+# ### 1. Item Type Vs Total Revenue :
+
+# In[42]:
+
+
+product_sales = pd.DataFrame(data.groupby('Item Type').sum()['Total Revenue'])
+product_sales.sort_values('Total Revenue',ascending=False)
+
+
+# In[43]:
+
+
+plt.figure(figsize=(15,6))
+sns.barplot(x='Item Type', y='Total Revenue',data=data)
+plt.title("BAR PLOT SHOWING PRODUCT RANKING BY TOTAL REVENUE")
+plt.show()
+
+
+# ### 2. Item Type Vs Units Sold :
+
+# In[44]:
+
+
+product_sell = pd.DataFrame(data.groupby('Item Type').sum()['Units Sold'])
+product_sell.sort_values('Units Sold',ascending = False)
+
+
+# In[45]:
+
+
+plt.figure(figsize=(20,6))
+sns.barplot(x='Item Type', y='Units Sold',data=data,palette='brg')
+plt.title('Most selling items')
+plt.show()
+
+
+# ### 3. Item Type Vs Total Profit :
+
+# In[46]:
+
+
+Item_profit = pd.DataFrame(data.groupby(['Item Type']).sum()['Total Profit'])
+Item_profit.sort_values(['Item Type'],ascending = False)
+
+
+# In[47]:
+
+
+plt.figure(figsize=(15,6))
+sns.barplot(x='Item Type', y='Total Profit',data=data,palette='winter', saturation=.5,ci=None)
+plt.title("Items with profit")
+
+
+# In[48]:
+
+
+data['Order Priority'].unique()
+
+
+# ### 4. Count of order priority :
+
+# In[49]:
+
+
+sns.countplot(data['Order Priority'],palette='Set1')
+
+
+# ### 5. Order Priority Vs Total Revenue :
+
+# In[50]:
+
+
+sns.barplot(x='Order Priority', y='Total Revenue',data=data,palette='pastel',ci=None)
+plt.title('Revenue generated by priority')
+
+
+# ### 6. Item Type Vs Total Profit on the basis of Order Priority :
+
+# In[51]:
+
+
+plt.figure(figsize=(15,6))
+sns.barplot(x='Item Type', y='Total Profit',data=data,palette='Reds', saturation=.5,ci=None,hue = 'Order Priority')
+plt.title('items with profit')
+
+
+# ### 7. Item Type Vs Total Revenue on the basis of Order Priority :
+
+# In[52]:
+
+
+plt.figure(figsize=(20,6))
+sns.barplot(x='Item Type', y='Total Profit',data=data,palette='afmhot', saturation=.5,ci=None,hue = 'Order Priority')
+plt.title('items with profit')
+
+
+# ### 8. Online Vs Offline sales :
+
+# In[53]:
+
+
+plt.figure(figsize=(5,2))
+sns.countplot(data['Sales Channel'],palette='hot')
+plt.title('Count of offline and online sales')
+
+
+# In[54]:
+
+
+sns.barplot(x='Sales Channel' ,y='Total Revenue',data = data,ci=None,palette="hsv")
+
+
+# ## Conclusion:
+# 
+# 1. The number of online and offline orders are equal.
+# 2. The Total Revenue of Offline sales is more than that of Online sales.
